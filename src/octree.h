@@ -30,11 +30,12 @@ class Octree : public Node3D {
 
 private:
 	struct OctreeNode {
-		OctreeNode(AABB _bounds, RID _area_rid, RID _shape_rid, int _depth)
-    		: bounds(_bounds)
+		OctreeNode(OctreeNode* _parent, AABB _bounds, RID _area_rid, RID _shape_rid)
+    		: parent(_parent)
+			, bounds(_bounds)
     		, area_rid(_area_rid)
 			, shape_rid(_shape_rid)
-    		, depth(_depth)
+    		, depth(parent ? parent->depth+1 : 0)
 		{}
 
 		~OctreeNode() {
@@ -46,17 +47,19 @@ private:
 			if (shape_rid.is_valid())
 				phys3->free_rid(shape_rid);
 		}
-
+		
+		std::unique_ptr<OctreeNode> children[8];
+		OctreeNode* parent;
 		AABB bounds;
 		RID area_rid;
 		RID shape_rid;
 		int depth;
 
-		std::unique_ptr<OctreeNode> children[8];
-		TypedArray<Node3D> elements;
+		int count;
 	};
-	
+
 	std::unordered_map<RID, OctreeNode*, RIDHasher> area_map;
+	std::unordered_map<int64_t, int> overlap_count;
 	std::unique_ptr<OctreeNode> root_node;
 	int depth_limit = 5;
 	int element_limit = 3;

@@ -18,10 +18,10 @@ void Octree::_ready() {
 
     
     root_node = std::make_unique<OctreeNode>(
+        nullptr,
         root_bounds,
         area_rid,
-        box_rid,
-        0
+        box_rid
     );
     
     area_map[area_rid] = root_node.get();
@@ -54,19 +54,49 @@ void Octree::insert(int _status, RID _body_rid, int64_t _instance_id, int _body_
     print_line("found area: ", _area_rid, " in area map");
 
     OctreeNode* area = it->second;
-    Node3D* element = Object::cast_to<Node3D>(ObjectDB::get_instance(ObjectID(_instance_id))); //maybe faster to get with rid instead of id? idk
 
     switch (_status) {
     case PhysicsServer3D::AREA_BODY_ADDED:
-        area->elements.push_back(element);
+        print_line("element entered octree node: ", Object::cast_to<Node3D>(ObjectDB::get_instance(ObjectID(_instance_id)))->get_name());
+        area->count++;
+        overlap_count[_instance_id]++;
 
-        print_line("element entered octree: ", element->get_name());
+        //propogate count if not overlapping multiple nodes
+        if (overlap_count[_instance_id] == 1) {
+            OctreeNode* ancestor = area->parent;
+            while (ancestor) {
+                ancestor->count++;
+                ancestor = ancestor->parent;
+            }
+        }
 
-        if(area->elements.size() > element_limit)
+        if(area->count > element_limit)
             split(area);
 
         break;
-    
+
+    case PhysicsServer3D::AREA_BODY_REMOVED:
+        print_line("element exited octree node: ", Object::cast_to<Node3D>(ObjectDB::get_instance(ObjectID(_instance_id)))->get_name());
+        area->count--;
+        overlap_count[_instance_id]--;
+
+        //propogate count and erase if no longer inside of the tree
+        if (overlap_count[_instance_id] == 0) {
+            overlap_count.erase(_instance_id);
+            OctreeNode* ancestor = area->parent;
+            while (ancestor) {
+                ancestor->count--;
+
+                if (ancestor->count < element_limit)
+                    merge(ancestor);
+
+                ancestor = ancestor->parent;
+            }
+        }
+        //this fails to account for the fact that a node might leave in a different-sub-tree than it entered from
+
+        break;
+
     default:
         print_line("uhnandled status: ", _status);
         break;
@@ -107,10 +137,10 @@ void Octree::split(OctreeNode* _node) {
 
         //initialilze child
         _node->children[i] = std::make_unique<OctreeNode>(
+            _node,
             child_bounds,
             area_rid,
-            box_rid,
-            _node->depth + 1
+            box_rid
         );
 
         area_map[area_rid] = _node->children[i].get();
@@ -124,8 +154,7 @@ void Octree::split(OctreeNode* _node) {
 
     //disable the parent node physics
     phys3->area_set_space(_node->area_rid, RID());
-    _node->elements.clear();
-
+    _node->count = 0;
 
     //TEMP
     print_line("split octree");
