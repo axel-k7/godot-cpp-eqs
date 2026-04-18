@@ -32,16 +32,6 @@ void Octree::_ready() {
 
     //TEMP
     print_line("initialized octree with area: ", area_rid);
-
-    init_debug_draw();
-}
-
-void Octree::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("insert", "_status", "_body_rid", "_instance_id", "_body_shape_index", "_area_shape_index", "_area_rid"), &Octree::insert);
-
-    ClassDB::bind_method(D_METHOD("get_base_size"), &Octree::get_base_size);
-    ClassDB::bind_method(D_METHOD("set_base_size", "value"), &Octree::set_base_size);
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_size", PROPERTY_HINT_RANGE, "1,50"), "set_base_size", "get_base_size");
 }
 
 //maybe look to pass area directly somehow to avoid map lookups? callable only accepts variant
@@ -158,8 +148,6 @@ void Octree::split(OctreeNode* _node) {
 
     //TEMP
     print_line("split octree");
-
-    update_debug();
 }
 
 void Octree::merge(OctreeNode* _node) {
@@ -179,6 +167,24 @@ void Octree::merge(OctreeNode* _node) {
 
     //TEMP
     print_line("merged octree");
+}
 
-    update_debug();
+
+
+void Octree::draw_debug() {
+    if (!root_node) return;
+
+    draw_debug_recursive(root_node.get());
+
+}
+
+void Octree::draw_debug_recursive(OctreeNode* _node) {
+    if (!_node) return;
+
+    DebugDrawer::get_singleton()->draw_aabb(_node->bounds, Color(1,0,0));
+
+    if (!_node->children[0]) return;
+
+    for (int i = 0; i < 8; ++i)
+        draw_debug_recursive(_node->children[i].get());
 }
