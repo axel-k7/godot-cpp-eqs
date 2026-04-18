@@ -14,67 +14,51 @@
 #include "godot_cpp/variant/typed_array.hpp"
 
 #include "debug_drawer.h"
+#include "registry.h"
 
 using namespace godot;
 
-
-struct RIDHasher {
-	std::size_t operator()(const RID& _rid) const {
-		return std::hash<uint64_t>()(_rid.get_id());
-	}
+struct InfluencePoint {
+	Vector3 position;
+	//float some_weight;
 };
 
-
-//maybe make a general data-partitioner class? might make inheritance too annoying
 class Octree : public Node3D {
 	GDCLASS(Octree, Node3D)
 
 private:
 	struct OctreeNode {
-		OctreeNode(OctreeNode* _parent, AABB _bounds, RID _area_rid, RID _shape_rid)
-    		: parent(_parent)
+		OctreeNode(size_t _chunk_id, AABB _bounds, int _depth)
+			: chunk_id(_chunk_id)
 			, bounds(_bounds)
-    		, area_rid(_area_rid)
-			, shape_rid(_shape_rid)
-    		, depth(parent ? parent->depth+1 : 0)
+    		, depth(_depth)
 		{}
 
-		~OctreeNode() {
-			PhysicsServer3D* phys3 = PhysicsServer3D::get_singleton();
-
-			if (area_rid.is_valid())
-				phys3->free_rid(area_rid);
-
-			if (shape_rid.is_valid())
-				phys3->free_rid(shape_rid);
-		}
-		
 		std::unique_ptr<OctreeNode> children[8];
-		OctreeNode* parent;
 		AABB bounds;
-		RID area_rid;
-		RID shape_rid;
+		size_t chunk_id;
 		int depth;
-
-		int count;
 	};
 
-	std::unordered_map<RID, OctreeNode*, RIDHasher> area_map;
-	std::unordered_map<int64_t, int> overlap_count;
 	std::unique_ptr<OctreeNode> root_node;
 	int depth_limit = 5;
 	int element_limit = 3;
 
 	float base_size = 10;
 
+	Registry<InfluencePoint> registry;
+
 	
 	void split(OctreeNode* _node);
 	void merge(OctreeNode* _node);
 
+	auto find_node(Vector3 _point) -> OctreeNode*;
+	auto find_node_recursive(OctreeNode* _node, Vector3 _point) -> OctreeNode*;
+
 	void draw_debug_recursive(OctreeNode* _node);
 
 public:
-	void insert(int _status, RID _body_rid, int64_t _instance_id, int _body_shape_index, int _area_shape_index, RID _area_rid);
+	auto try_insert(Vector3 _point) -> size_t;
 	void draw_debug();
 	
 	void _ready() override;
@@ -86,7 +70,7 @@ public:
 //godot boilerplate
 public:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("insert", "_status", "_body_rid", "_instance_id", "_body_shape_index", "_area_shape_index", "_area_rid"), &Octree::insert);
+		ClassDB::bind_method(D_METHOD("try_insert", "_point"), &Octree::try_insert);
 		ClassDB::bind_method(D_METHOD("draw_debug"), &Octree::draw_debug);
 		
 		ClassDB::bind_method(D_METHOD("get_base_size"), &Octree::get_base_size);

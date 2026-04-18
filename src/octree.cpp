@@ -1,103 +1,54 @@
 #include "octree.h"
 
 void Octree::_ready() {
-    PhysicsServer3D* phys3 = PhysicsServer3D::get_singleton();
-
     AABB root_bounds(get_global_position(), Vector3(base_size, base_size, base_size));
 
-    RID area_rid = phys3->area_create();
-    RID box_rid = phys3->box_shape_create();
-    
-    //box shape wants half extents
-    phys3->shape_set_data(box_rid, root_bounds.size * 0.5f);
-    phys3->area_add_shape(area_rid, box_rid);
-
-    //setting area position to middle of aabb
-    Transform3D transform(Basis(), root_bounds.position + root_bounds.size * 0.5f);
-    phys3->area_set_transform(area_rid, transform);
-
-    
     root_node = std::make_unique<OctreeNode>(
-        nullptr,
+        registry.CreateChunk(element_limit),
         root_bounds,
-        area_rid,
-        box_rid
+        0
     );
-    
-    area_map[area_rid] = root_node.get();
-    Callable insert_callback = Callable(this, "insert").bind(area_rid);
-    
-    phys3->area_set_monitor_callback(area_rid, insert_callback);
-    phys3->area_set_space(area_rid, get_world_3d()->get_space());
 
-    //TEMP
-    print_line("initialized octree with area: ", area_rid);
+    print_line("initialized octree");
 }
 
-//maybe look to pass area directly somehow to avoid map lookups? callable only accepts variant
-void Octree::insert(int _status, RID _body_rid, int64_t _instance_id, int _body_shape_index, int _area_shape_index, RID _area_rid) {
-    print_line("insertion ran on area: ", _body_rid);
 
-    auto it = area_map.find(_area_rid);
-    if (it == area_map.end()) return;
+auto Octree::try_insert(Vector3 _point) -> size_t {
+    OctreeNode* node = find_node(_point);
+    if (!node) return SIZE_MAX;
 
-    print_line("found area: ", _area_rid, " in area map");
+    size_t id = registry.CreateEntry(node->chunk_id, InfluencePoint{_point});
+    
+    if (registry.GetChunk(node->chunk_id)->count >= element_limit)
+        split(node);
 
-    OctreeNode* area = it->second;
+    return id;
+}
 
-    switch (_status) {
-    case PhysicsServer3D::AREA_BODY_ADDED:
-        print_line("element entered octree node: ", Object::cast_to<Node3D>(ObjectDB::get_instance(ObjectID(_instance_id)))->get_name());
-        area->count++;
-        overlap_count[_instance_id]++;
 
-        //propogate count if not overlapping multiple nodes
-        if (overlap_count[_instance_id] == 1) {
-            OctreeNode* ancestor = area->parent;
-            while (ancestor) {
-                ancestor->count++;
-                ancestor = ancestor->parent;
-            }
+auto Octree::find_node(Vector3 _point) -> OctreeNode* {
+    if (!root_node->bounds.has_point(_point)) return nullptr;
+
+    return find_node_recursive(root_node.get(), _point);
+}
+
+auto Octree::find_node_recursive(OctreeNode* _node, Vector3 _point) -> OctreeNode* {
+    if (!_node->bounds.has_point(_point)) return nullptr;
+
+    if (_node->children[0]) {
+        for (int i = 0; i < 8; ++i) {
+            OctreeNode* node = find_node_recursive(_node->children[i].get(), _point);
+            if (node)
+                return node;
         }
-
-        if(area->count > element_limit)
-            split(area);
-
-        break;
-
-    case PhysicsServer3D::AREA_BODY_REMOVED:
-        print_line("element exited octree node: ", Object::cast_to<Node3D>(ObjectDB::get_instance(ObjectID(_instance_id)))->get_name());
-        area->count--;
-        overlap_count[_instance_id]--;
-
-        //propogate count and erase if no longer inside of the tree
-        if (overlap_count[_instance_id] == 0) {
-            overlap_count.erase(_instance_id);
-            OctreeNode* ancestor = area->parent;
-            while (ancestor) {
-                ancestor->count--;
-
-                if (ancestor->count < element_limit)
-                    merge(ancestor);
-
-                ancestor = ancestor->parent;
-            }
-        }
-        //this fails to account for the fact that a node might leave in a different-sub-tree than it entered from
-
-        break;
-
-    default:
-        print_line("uhnandled status: ", _status);
-        break;
     }
+
+    return _node;
 }
 
 
 void Octree::split(OctreeNode* _node) {
     if (_node->children[0] || _node->depth >= depth_limit) return; //if node already has children or at limit
-    
-    PhysicsServer3D* phys3 = PhysicsServer3D::get_singleton();
     
     Vector3 half_size = _node->bounds.size * 0.5f;
 
@@ -110,41 +61,23 @@ void Octree::split(OctreeNode* _node) {
         //(000) = left, bottom, front
         //(111) = right, top, back
 
-        AABB child_bounds(_node->bounds.position + offset, half_size);
-        //min = pos
-        //max = pos + size
-
-        RID area_rid = phys3->area_create();
-        RID box_rid = phys3->box_shape_create();
-        
-        //box shape wants half extents
-        phys3->shape_set_data(box_rid, child_bounds.size * 0.5f);
-        phys3->area_add_shape(area_rid, box_rid);
-
-        //setting area position to middle of aabb
-        Transform3D transform(Basis(), child_bounds.position + child_bounds.size * 0.5f);
-        phys3->area_set_transform(area_rid, transform);
-
         //initialilze child
         _node->children[i] = std::make_unique<OctreeNode>(
-            _node,
-            child_bounds,
-            area_rid,
-            box_rid
+            registry.CreateChunk(element_limit),
+            AABB(_node->bounds.position + offset, half_size),
+            _node->depth+1
         );
-
-        area_map[area_rid] = _node->children[i].get();
-
-        Callable insert_callback = Callable(this, "insert").bind(area_rid);
-
-        //activate area
-        phys3->area_set_monitor_callback(area_rid, insert_callback);
-        phys3->area_set_space(area_rid, get_world_3d()->get_space());
     }
 
-    //disable the parent node physics
-    phys3->area_set_space(_node->area_rid, RID());
-    _node->count = 0;
+    auto chunk = registry.GetChunk(_node->chunk_id);
+    auto elements = chunk->GetAll();
+    for (int i = 0; i < chunk->count; i++) {
+        OctreeNode* target_child = find_node_recursive(_node, elements[i].data.position);
+        registry.MoveEntry(elements[0].id, target_child->chunk_id);
+    }
+
+    registry.DestroyChunk(_node->chunk_id);
+    _node->chunk_id = SIZE_MAX;
 
     //TEMP
     print_line("split octree");
@@ -153,17 +86,23 @@ void Octree::split(OctreeNode* _node) {
 void Octree::merge(OctreeNode* _node) {
     if (!_node || !_node->children[0]) return;
     
+    _node->chunk_id = registry.CreateChunk(element_limit);
+
     //recursively remove children
     for (int i = 0; i < 8; ++i) {
         std::unique_ptr<OctreeNode>& current_child = _node->children[i];
-
         merge(current_child.get());
-        area_map.erase(current_child->area_rid);
+        
+        //move all child elements to parent
+        auto child_chunk = registry.GetChunk(current_child->chunk_id);
+        auto elements = child_chunk->GetAll();
+
+        for (int i = 0; i < child_chunk->count; i++)
+            registry.MoveEntry(elements[0].id, _node->chunk_id);
+
+        registry.DestroyChunk(current_child->chunk_id);
         current_child.reset();
     }
-    
-    PhysicsServer3D::get_singleton()->area_set_space(_node->area_rid, get_world_3d()->get_space());
-
 
     //TEMP
     print_line("merged octree");

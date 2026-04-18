@@ -1,14 +1,14 @@
-#include "registry.h"
+#include "dynamic_registry.h"
 
 template<typename T>
-Registry<T>::Chunk::Chunk(size_t _capacity) {
+DynamicRegistry<T>::Chunk::Chunk(size_t _capacity) {
     chunk_buffer = operator new(sizeof(Element) * _capacity, std::align_val_t(alignof(Element)));
     //not sure how this works with dynamically sized elements like vectors and such
     //probably fine as long as destructors are called?
 }
 
 template<typename T>
-Registry<T>::Chunk::Chunk(Chunk&& _source) noexcept
+DynamicRegistry<T>::Chunk::Chunk(Chunk&& _source) noexcept
     : chunk_buffer(_source.chunk_buffer)
     , count(_source.count)
     , capacity(_source.capacity)
@@ -19,7 +19,7 @@ Registry<T>::Chunk::Chunk(Chunk&& _source) noexcept
 }
 
 template<typename T>
-Registry<T>::Chunk::~Chunk() {
+DynamicRegistry<T>::Chunk::~Chunk() {
     auto data_array = GetAll();
     for (size_t i = 0; i < count; ++i)
         data_array[i].~Element();
@@ -29,7 +29,7 @@ Registry<T>::Chunk::~Chunk() {
 }
 
 template<typename T>
-auto Registry<T>::Chunk::operator=(Chunk&& _source) noexcept -> Chunk& {
+auto DynamicRegistry<T>::Chunk::operator=(Chunk&& _source) noexcept -> Chunk& {
     if (this == &_source)
         return *this;
 
@@ -47,7 +47,7 @@ auto Registry<T>::Chunk::operator=(Chunk&& _source) noexcept -> Chunk& {
 }
 
 template<typename T>
-void Registry<T>::Chunk::TransferData(size_t _index, Chunk* _source, size_t _source_index) {
+void DynamicRegistry<T>::Chunk::TransferData(size_t _index, Chunk* _source, size_t _source_index) {
     Element& source = _source->GetAt(_source_index);
     void* destination = GetRaw(_index);
 
@@ -57,13 +57,13 @@ void Registry<T>::Chunk::TransferData(size_t _index, Chunk* _source, size_t _sou
 
 template<typename T>
 template<typename... Args>
-void Registry<T>::Chunk::CreateAt(size_t _index, size_t _id, Args&&... _args) {
+void DynamicRegistry<T>::Chunk::CreateAt(size_t _index, size_t _id, Args&&... _args) {
     new (GetRaw(_index)) Element(_id, std::forward<Args>(_args)...);
     count++;
 }
 
 template<typename T>
-void Registry<T>::Chunk::SwapPop(size_t _index) {
+void DynamicRegistry<T>::Chunk::SwapPop(size_t _index) {
     size_t last = count-1;
 
     if (_index != last)
@@ -74,7 +74,7 @@ void Registry<T>::Chunk::SwapPop(size_t _index) {
 }
 
 template<typename T>
-auto Registry<T>::EnsureChunk() -> Chunk& {
+auto DynamicRegistry<T>::EnsureChunk() -> Chunk& {
     for(Chunk& chunk : chunks) {
         if (chunk.count < chunk.capacity)
             return chunk;
@@ -85,7 +85,7 @@ auto Registry<T>::EnsureChunk() -> Chunk& {
 }
 
 template<typename T>
-void Registry<T>::InvalidateRecord(size_t _id) {
+void DynamicRegistry<T>::InvalidateRecord(size_t _id) {
     RegistryRecord& record = records[_id];
 
     record.chunk = nullptr;
@@ -95,7 +95,7 @@ void Registry<T>::InvalidateRecord(size_t _id) {
 
 template<typename T>
 template<typename... Args>
-auto Registry<T>::CreateEntry(Args&&... _args) -> size_t {
+auto DynamicRegistry<T>::CreateEntry(Args&&... _args) -> size_t {
     size_t id;
 
     if (!free_ids.empty()) {
@@ -124,7 +124,7 @@ auto Registry<T>::CreateEntry(Args&&... _args) -> size_t {
 }
 
 template<typename T>
-void Registry<T>::DestroyEntry(size_t _id) {
+void DynamicRegistry<T>::DestroyEntry(size_t _id) {
     RegistryRecord& record = records[_id];
 
     Chunk* chunk = record.chunk;
@@ -147,6 +147,6 @@ void Registry<T>::DestroyEntry(size_t _id) {
 }
 
 template<typename T>
-auto Registry<T>::GetEntry(size_t _id) -> T& {
+auto DynamicRegistry<T>::GetEntry(size_t _id) -> T& {
     return records[_id].chunk->GetAt(records[_id].index).data;
 }
