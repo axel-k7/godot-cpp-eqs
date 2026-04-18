@@ -1,6 +1,10 @@
 #include "octree.h"
 
 void Octree::_ready() {
+    init();
+}
+
+void Octree::init() {
     AABB root_bounds(get_global_position(), Vector3(base_size, base_size, base_size));
 
     root_node = std::make_unique<OctreeNode>(
@@ -14,6 +18,8 @@ void Octree::_ready() {
 
 
 auto Octree::try_insert(Vector3 _point) -> size_t {
+    print_line("tried inserting point (C++)");
+
     OctreeNode* node = find_node(_point);
     if (!node) return SIZE_MAX;
 
@@ -110,20 +116,20 @@ void Octree::merge(OctreeNode* _node) {
 
 
 
-void Octree::draw_debug() {
+void Octree::draw_debug(Color _color) {
     if (!root_node) return;
 
-    draw_debug_recursive(root_node.get());
+    draw_debug_recursive(root_node.get(), _color);
 
 }
 
-void Octree::draw_debug_recursive(OctreeNode* _node) {
+void Octree::draw_debug_recursive(OctreeNode* _node, Color _color) {
     if (!_node) return;
 
-    DebugDrawer::get_singleton()->draw_aabb(_node->bounds, Color(1,0,0));
+    DebugDrawer::get_singleton()->draw_aabb(_node->bounds, _color);
 
     if (!_node->children[0]) return;
 
     for (int i = 0; i < 8; ++i)
-        draw_debug_recursive(_node->children[i].get());
+        draw_debug_recursive(_node->children[i].get(), _color);
 }

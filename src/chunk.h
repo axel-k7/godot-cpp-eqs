@@ -1,5 +1,7 @@
 #pragma once
 
+#include "godot_cpp/variant/variant.hpp"
+
 template<typename T>
 struct Chunk {
 	Chunk(size_t _capacity);

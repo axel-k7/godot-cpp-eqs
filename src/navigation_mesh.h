@@ -1,17 +1,5 @@
 #pragma once
 
-#include <deque>
-
-#include "godot_cpp/classes/ref_counted.hpp"
-#include "godot_cpp/classes/area3d.hpp"
-#include "godot_cpp/classes/world3d.hpp"
-#include "godot_cpp/classes/mesh_instance3d.hpp"
-#include "godot_cpp/classes/immediate_mesh.hpp"
-#include "godot_cpp/classes/standard_material3d.hpp"
-
-#include "godot_cpp/variant/aabb.hpp"
-#include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/variant/callable.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
 
 #include "debug_drawer.h"
@@ -60,12 +48,14 @@ private:
 public:
 	void generate(MeshInstance3D* _mesh);
 	void draw_debug();
+	auto get_points() -> TypedArray<Vector3>;
 
 	
 //godot boilerplate
 public:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("generate", "_mesh"), &EQSNavigationMesh::generate);
+		ClassDB::bind_method(D_METHOD("get_points"), &EQSNavigationMesh::get_points);
 		ClassDB::bind_method(D_METHOD("draw_debug"), &EQSNavigationMesh::draw_debug);
 	}
 

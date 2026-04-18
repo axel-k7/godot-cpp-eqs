@@ -42,7 +42,7 @@ private:
 
 	std::unique_ptr<OctreeNode> root_node;
 	int depth_limit = 5;
-	int element_limit = 3;
+	int element_limit = 5;
 
 	float base_size = 10;
 
@@ -55,13 +55,15 @@ private:
 	auto find_node(Vector3 _point) -> OctreeNode*;
 	auto find_node_recursive(OctreeNode* _node, Vector3 _point) -> OctreeNode*;
 
-	void draw_debug_recursive(OctreeNode* _node);
+	void draw_debug_recursive(OctreeNode* _node, Color _color);
 
 public:
 	auto try_insert(Vector3 _point) -> size_t;
-	void draw_debug();
+	void draw_debug(Color _color);
 	
 	void _ready() override;
+
+	void init();
 	
 
 
@@ -71,15 +73,30 @@ public:
 public:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("try_insert", "_point"), &Octree::try_insert);
-		ClassDB::bind_method(D_METHOD("draw_debug"), &Octree::draw_debug);
+		ClassDB::bind_method(D_METHOD("draw_debug", "_color"), &Octree::draw_debug);
+		ClassDB::bind_method(D_METHOD("init"), &Octree::init);
 		
 		ClassDB::bind_method(D_METHOD("get_base_size"), &Octree::get_base_size);
-		ClassDB::bind_method(D_METHOD("set_base_size", "value"), &Octree::set_base_size);
+		ClassDB::bind_method(D_METHOD("set_base_size", "_value"), &Octree::set_base_size);
 		ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_size", PROPERTY_HINT_RANGE, "1,50"), "set_base_size", "get_base_size");
+
+		ClassDB::bind_method(D_METHOD("get_depth_limit"), &Octree::get_depth_limit);
+		ClassDB::bind_method(D_METHOD("set_depth_limit", "_value"), &Octree::set_depth_limit);
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_limit", PROPERTY_HINT_RANGE, "1,50"), "set_depth_limit", "get_depth_limit");
+
+		ClassDB::bind_method(D_METHOD("get_element_limit"), &Octree::get_element_limit);
+		ClassDB::bind_method(D_METHOD("set_element_limit", "_value"), &Octree::set_element_limit);
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "element_limit", PROPERTY_HINT_RANGE, "1,50"), "set_element_limit", "get_element_limit");
 	}
 
 
 	float get_base_size() const { return base_size; };
 	void set_base_size(float _value) { base_size = _value; };
+
+	int get_depth_limit() const { return depth_limit; };
+	void set_depth_limit(int _value) { depth_limit = _value; };
+
+	int get_element_limit() const { return element_limit; };
+	void set_element_limit(float _value) { element_limit = _value; };
 
 };

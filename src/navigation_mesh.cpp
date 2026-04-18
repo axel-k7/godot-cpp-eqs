@@ -61,6 +61,19 @@ void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
     print_line("ran generator, node count: ", nodes.size());
 }
 
+auto EQSNavigationMesh::get_points() -> TypedArray<Vector3> {
+    TypedArray<Vector3> points;
+    size_t node_amount = nodes.size();
+    points.resize(nodes.size());
+
+    for (size_t i = 0; i < node_amount; ++i) {
+        points[i] = nodes[i].point;
+    }
+    
+    return points;
+}
+
+
 void EQSNavigationMesh::draw_debug() {
     if (nodes.empty()) return;
 

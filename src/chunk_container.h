@@ -21,7 +21,7 @@ public:
 	auto CreateChunk(size_t _capacity) -> size_t;
 	void DestroyChunk(size_t _id);
 	auto GetChunk(size_t _id) -> Chunk<T>*;
-	auto GetChunk(size_t _id) const -> const Chunk<T>* { return GetChunk(_id); }
+	auto GetChunk(size_t _id) const -> const Chunk<T>*;
 };
 
 #include "chunk_container.inl"
