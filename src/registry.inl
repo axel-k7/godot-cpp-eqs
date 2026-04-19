@@ -70,7 +70,7 @@ void Registry<T>::DestroyChunk(size_t _chunk_id) {
     Chunk<Element>* chunk = chunks.GetChunk(_chunk_id);
     if(!chunk) return;
 
-    Element* elements = chunk->GetAll();
+    auto elements = chunk->GetAll();
 
     for (int i = 0; i < chunk->count; ++i) {
         InvalidateRecord(elements[i].id);

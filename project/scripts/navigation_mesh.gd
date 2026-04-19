@@ -1,4 +1,4 @@
-extends EQSNavigationMesh
+extends SDFNavigationMesh
 
 @onready var mesh: MeshInstance3D = $mesh
 

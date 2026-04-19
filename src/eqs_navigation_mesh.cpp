@@ -1,4 +1,4 @@
-#include "navigation_mesh.h"
+#include "eqs_navigation_mesh.h"
 
 
 void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
@@ -14,7 +14,6 @@ void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
 
     for (int s = 0; s < mesh->get_surface_count(); s++) {
         Array mesh_arrays = mesh->surface_get_arrays(s);
-
         PackedVector3Array vertices = mesh_arrays[Mesh::ARRAY_VERTEX];
         PackedInt32Array indices = mesh_arrays[Mesh::ARRAY_INDEX];
 
@@ -56,7 +55,7 @@ void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
         }
     }
 
-    edge_map.clear(); //don't need to keep this
+    edge_map.clear(); //don't need to keep the edge map
 
     print_line("ran generator, node count: ", nodes.size());
 }
@@ -73,6 +72,19 @@ auto EQSNavigationMesh::get_points() -> TypedArray<Vector3> {
     return points;
 }
 
+//mega scuffed but temp
+auto EQSNavigationMesh::get_tris() -> std::vector<Triangle> {
+    std::vector<Triangle> tris;
+    tris.reserve(nodes.size());
+
+    for (size_t i = 0; i < nodes.size(); ++i)
+        tris[i] = nodes[i].tri;
+    
+    return tris;
+}
+
+
+
 
 void EQSNavigationMesh::draw_debug() {
     if (nodes.empty()) return;
@@ -80,7 +92,7 @@ void EQSNavigationMesh::draw_debug() {
     DebugDrawer* debug = DebugDrawer::get_singleton();
 
     for (const auto& node : nodes) {
-        const Vector3* v = node.tri.edges;
+        const Vector3* v = node.tri.vertices;
 
         for (int i = 0; i < 3; i++)
             debug->draw_line(v[i], v[(i + 1) % 3], Color(1,0,0));

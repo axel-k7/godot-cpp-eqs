@@ -1,102 +1,66 @@
 #pragma once
 
-#include "godot_cpp/classes/ref_counted.hpp"
-#include "godot_cpp/classes/area3d.hpp"
-#include "godot_cpp/classes/world3d.hpp"
-#include "godot_cpp/classes/physics_server3d.hpp"
-#include "godot_cpp/classes/immediate_mesh.hpp"
-#include "godot_cpp/classes/mesh_instance3d.hpp"
-#include "godot_cpp/classes/standard_material3d.hpp"
-
 #include "godot_cpp/variant/aabb.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/variant/callable.hpp"
-#include "godot_cpp/variant/typed_array.hpp"
 
 #include "debug_drawer.h"
 #include "registry.h"
 
 using namespace godot;
 
-struct InfluencePoint {
-	Vector3 position;
-	//float some_weight;
-};
 
-class Octree : public Node3D {
-	GDCLASS(Octree, Node3D)
-
-private:
+template<typename T>
+class Octree {
+protected:
 	struct OctreeNode {
-		OctreeNode(size_t _chunk_id, AABB _bounds, int _depth)
+		OctreeNode(size_t _chunk_id, int _depth)
 			: chunk_id(_chunk_id)
-			, bounds(_bounds)
     		, depth(_depth)
 		{}
 
 		std::unique_ptr<OctreeNode> children[8];
-		AABB bounds;
 		size_t chunk_id;
 		int depth;
+
+		bool is_leaf() const { return children[0] == nullptr; }
 	};
 
+	Registry<T> registry;
+	
+	std::vector<OctreeNode*> pending_splits;
 	std::unique_ptr<OctreeNode> root_node;
-	int depth_limit = 5;
-	int element_limit = 5;
-
-	float base_size = 10;
-
-	Registry<InfluencePoint> registry;
-
+	
+	int depth_limit;
+	int element_limit;
 	
 	void split(OctreeNode* _node);
 	void merge(OctreeNode* _node);
 
-	auto find_node(Vector3 _point) -> OctreeNode*;
-	auto find_node_recursive(OctreeNode* _node, Vector3 _point) -> OctreeNode*;
-
-	void draw_debug_recursive(OctreeNode* _node, Color _color);
-
-public:
-	auto try_insert(Vector3 _point) -> size_t;
-	void draw_debug(Color _color);
 	
-	void _ready() override;
-
-	void init();
+	auto try_populate_node(OctreeNode* _node, T& _data) -> size_t;
 	
-
-
-
-
-//godot boilerplate
+	virtual auto get_child_index(OctreeNode* _parent, const T& _data) -> int = 0;
+	virtual auto node_contains(OctreeNode* _parent, const T& _data) -> bool = 0;
+	virtual void on_create_child(OctreeNode* _parent, OctreeNode* _child, int _index) = 0;
+	
 public:
-	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("try_insert", "_point"), &Octree::try_insert);
-		ClassDB::bind_method(D_METHOD("draw_debug", "_color"), &Octree::draw_debug);
-		ClassDB::bind_method(D_METHOD("init"), &Octree::init);
-		
-		ClassDB::bind_method(D_METHOD("get_base_size"), &Octree::get_base_size);
-		ClassDB::bind_method(D_METHOD("set_base_size", "_value"), &Octree::set_base_size);
-		ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_size", PROPERTY_HINT_RANGE, "1,50"), "set_base_size", "get_base_size");
+	Octree(int _element_limit, int _depth_limit) 
+	: element_limit(_element_limit)
+	, depth_limit(_depth_limit)
+	{ }
+	
+	auto try_insert(T& _data) -> size_t;
+	//void draw_debug(Color _color);
 
-		ClassDB::bind_method(D_METHOD("get_depth_limit"), &Octree::get_depth_limit);
-		ClassDB::bind_method(D_METHOD("set_depth_limit", "_value"), &Octree::set_depth_limit);
-		ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_limit", PROPERTY_HINT_RANGE, "1,50"), "set_depth_limit", "get_depth_limit");
-
-		ClassDB::bind_method(D_METHOD("get_element_limit"), &Octree::get_element_limit);
-		ClassDB::bind_method(D_METHOD("set_element_limit", "_value"), &Octree::set_element_limit);
-		ADD_PROPERTY(PropertyInfo(Variant::INT, "element_limit", PROPERTY_HINT_RANGE, "1,50"), "set_element_limit", "get_element_limit");
-	}
+	auto find_node(T& _data) -> OctreeNode* { return get_node_recursive(root_node.get(), _data); };
+	
+	virtual void init() = 0;
 
 
-	float get_base_size() const { return base_size; };
-	void set_base_size(float _value) { base_size = _value; };
 
-	int get_depth_limit() const { return depth_limit; };
-	void set_depth_limit(int _value) { depth_limit = _value; };
-
-	int get_element_limit() const { return element_limit; };
-	void set_element_limit(float _value) { element_limit = _value; };
-
+protected:
+	auto get_node_recursive(OctreeNode* _node, T& _data) -> OctreeNode*;
+	//void draw_debug_recursive(OctreeNode* _node, Color _color);
 };
+
+#include "octree.inl"

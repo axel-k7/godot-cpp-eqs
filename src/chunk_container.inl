@@ -72,3 +72,15 @@ auto ChunkContainer<T>::GetChunk(size_t _id) const -> const Chunk<T>* {
 
     return &chunks[index];
 }
+
+
+template<typename T>
+auto ChunkContainer<T>::GetAllChunks() -> std::vector<Chunk<T>*> {
+    std::vector<Chunk<T>*> result;
+
+    for (size_t i = 0; i < chunks.size(); ++i)
+        if (index_to_id[i] != INVALID_CHUNK_INDEX)
+            result.push_back(&chunks[i]);
+    
+    return result;
+}

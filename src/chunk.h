@@ -4,6 +4,18 @@
 
 template<typename T>
 struct Chunk {
+	template<typename T>
+	struct ChunkView {
+		T* first;
+		size_t count;
+
+		T* begin() 		const 	 { return first; }
+		T* end() 		const 	 { return first + count; }
+		size_t size() 	const 	 { return count; }
+		T& operator[](size_t _i) { return first[_i]; }
+	};
+
+
 	Chunk(size_t _capacity);
 	~Chunk();
 
@@ -42,6 +54,8 @@ struct Chunk {
 	auto end() 	 -> T* { return GetAll() + count; }
 	auto end() 	 const -> const T* { return GetAll() + count; }
 
+	auto Items() -> ChunkView<T> { return { GetAll(), count }; }
+	auto Items() const -> ChunkView<const T> { return { GetAll(), count }; }
 
 	bool IsFull() const { return count == capacity; }
 	bool IsEmpty() const { return count == 0; }

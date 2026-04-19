@@ -5,10 +5,9 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include "example_class.h"
 #include "query_system.h"
-#include "octree.h"
-#include "navigation_mesh.h"
+//#include "sdf_octree.h"
+#include "eqs_navigation_mesh.h"
 
 using namespace godot;
 
@@ -17,9 +16,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(ExampleClass);
 	GDREGISTER_CLASS(QuerySystem);
-	GDREGISTER_CLASS(Octree);
+	//GDREGISTER_CLASS(SDFOctree);
 	GDREGISTER_CLASS(EQSNavigationMesh);
 	GDREGISTER_CLASS(DebugDrawer);
 }

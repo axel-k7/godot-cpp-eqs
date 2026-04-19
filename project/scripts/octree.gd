@@ -1,26 +1,33 @@
-extends Octree
+extends SDFOctree
 
-@export var insert: bool = false
-@export var nav_mesh: EQSNavigationMesh
+@export var do_insert: bool = false
+@export var do_bake: bool = false
+@export var do_random_sdf: bool = false
+@export var nav_mesh: SDFNavigationMesh
 
 func _ready():
 	init()
-#	var min_range := -3
-#	var max_range := 3
-#	
-#	for i in range(15):
-#		var random_vec = Vector3(
-#			randf_range(min_range, max_range),
-#			randf_range(min_range, max_range),
-#			randf_range(min_range, max_range)
-#		)
-#		try_insert(random_vec)
 
 func _process(delta):
-	if insert:
-		for point in nav_mesh.get_points():
-			try_insert(point)
-		insert = false
+	if do_insert:
+		var tris = nav_mesh.get_tris();
+		for i in range(0, tris.size(), 3):
+			try_insert(tris[i], tris[i+1], tris[i+2])
+		do_insert = false
+	
+	if do_bake:
+		bake()
+		do_bake = false
 		
+	if (do_random_sdf):
+		var min := -base_size/2
+		var max := base_size/2
+		var random_point = Vector3(
+			randi_range(min, max),
+			randi_range(min, max),
+			randi_range(min, max)
+		)
+		print(get_sdf(random_point))
+		do_random_sdf = false
 
 	draw_debug(Color(0,0,1))

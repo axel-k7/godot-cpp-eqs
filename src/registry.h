@@ -52,6 +52,8 @@ public:
 	
 	void MoveEntry(size_t _entry_id, size_t _new_chunk_id);
 	void SwapEntry(size_t _a, size_t _b);
+
+	auto GetAllChunks() { return chunks.GetAllChunks(); }
 };
 
 #include "registry.inl"

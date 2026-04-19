@@ -22,6 +22,8 @@ public:
 	void DestroyChunk(size_t _id);
 	auto GetChunk(size_t _id) -> Chunk<T>*;
 	auto GetChunk(size_t _id) const -> const Chunk<T>*;
+
+	auto GetAllChunks() -> std::vector<Chunk<T>*>;
 };
 
 #include "chunk_container.inl"
