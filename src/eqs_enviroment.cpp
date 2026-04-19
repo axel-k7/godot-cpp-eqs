@@ -1,9 +1,12 @@
 #include "eqs_enviroment.h"
 
 void EQSEnviroment::_ready() {
-	if (!mesh) return;
+	if (Engine::get_singleton()->is_editor_hint()) return;
 
-	AABB global_aabb = mesh->get_global_transform().xform( mesh->get_aabb() );
+	if (!root) return;
+
+	/*disable octree for now, will figure out a way to do aabb with node later
+	AABB global_aabb = root->get_global_transform().xform( mesh->get_aabb() );
 
 	global_aabb.grow_by(1.2);
 
@@ -14,8 +17,9 @@ void EQSEnviroment::_ready() {
 	);
 
 	octree->init();
+	*/
 
-	nav_mesh.generate(mesh);
+	nav_mesh.generate(root);
 }
 
 

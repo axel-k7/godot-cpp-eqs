@@ -1,5 +1,6 @@
 #pragma once
 
+#include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/node3D.hpp"
 #include "godot_cpp/classes/random_number_generator.hpp"
 
@@ -37,7 +38,7 @@ private:
 	std::unique_ptr<InfluenceOctree> octree;
 	SDFNavigationMesh nav_mesh;
 
-	MeshInstance3D* mesh = nullptr;
+	Node* root = nullptr;
 
 	int split_limit = 5;
 	int depth_limit = 5;
@@ -50,9 +51,9 @@ public:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("draw_debug", "_color"), &EQSEnviroment::draw_debug);
 		
-		ClassDB::bind_method(D_METHOD("set_mesh", "_mesh"), &EQSEnviroment::set_mesh);
-		ClassDB::bind_method(D_METHOD("get_mesh"), &EQSEnviroment::get_mesh);
-		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_NODE_TYPE, "MeshInstance3D"), "set_mesh", "get_mesh");
+		ClassDB::bind_method(D_METHOD("set_root", "_root"), &EQSEnviroment::set_root);
+		ClassDB::bind_method(D_METHOD("get_root"), &EQSEnviroment::get_root);
+		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_NODE_TYPE, "Node"), "set_root", "get_root");
 
 		ClassDB::bind_method(D_METHOD("set_max_slope", "_max_slope"), &EQSEnviroment::set_max_slope);
 		ClassDB::bind_method(D_METHOD("get_max_slope"), &EQSEnviroment::get_max_slope);
@@ -67,8 +68,8 @@ public:
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_limit"), "set_depth_limit", "get_depth_limit");
 	}
 
-	void set_mesh(MeshInstance3D* _mesh) { mesh = _mesh; }
-	auto get_mesh() -> MeshInstance3D* { return mesh; }
+	auto get_root() -> Node* { return root; }
+	void set_root(Node* _root) { root = _root; }
 	
 	auto get_split_limit() -> int { return split_limit; }
 	void set_split_limit(int _split_limit) { split_limit = _split_limit; }

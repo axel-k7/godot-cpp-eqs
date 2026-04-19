@@ -35,9 +35,9 @@ private:
 	std::vector<NavigationNode> nodes;
 	std::unordered_map<Vector3, std::pair<size_t, size_t>, Vector3Hash> edge_map; 
 
-
+	void get_meshes_recursive(Node* _node, std::vector<MeshInstance3D*>& _result_vector);
 public:
-	void generate(MeshInstance3D* _mesh);
+	void generate(Node* _root);
 	void draw_debug();
 	auto get_points() -> TypedArray<Vector3>;
 	auto get_tris() -> std::vector<Triangle>;

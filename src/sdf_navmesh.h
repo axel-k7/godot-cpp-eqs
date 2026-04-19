@@ -18,13 +18,22 @@ public:
 		{}
 		Vector3 position;
 		float exposure;
+
+		std::vector<size_t> neighbours; //index in graph
 	};
 
-	float max_slope = 1.f;
 	std::vector<WalkablePoint> graph;
 
-	void generate(MeshInstance3D* _mesh);
+	float max_slope = 1.f;
+
+	float max_neighbour_dist = 5.f;
+	float min_clearance = 0.1f;
+
+	void generate(Node* _root);
 	void draw_debug();
 private:
 	NavPointGenerator generator;
+
+	void create_point(Vector3 _position, const std::vector<Triangle>& _tris);
+	void map_neighbours(const std::vector<Triangle>& _tris);
 };
