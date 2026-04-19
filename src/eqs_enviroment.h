@@ -1,6 +1,7 @@
 #pragma once
 
 #include "godot_cpp/classes/node3D.hpp"
+#include "godot_cpp/classes/random_number_generator.hpp"
 
 #include "sdf_evaluator.h"
 #include "spatial_octree.h"
@@ -14,6 +15,10 @@ class EQSEnviroment : public Node3D {
 
 public:
 	struct InfluencePoint {
+		InfluencePoint(Vector3 _position, float _weight)
+			: position(_position)
+			, test_weight(_weight)
+		{}
 		Vector3 position;
 		float test_weight;
 	};
@@ -34,8 +39,8 @@ private:
 
 	MeshInstance3D* mesh = nullptr;
 
-	size_t split_limit = 5;
-	size_t depth_limit = 5;
+	int split_limit = 5;
+	int depth_limit = 5;
 
 public:
 	void _ready() override;

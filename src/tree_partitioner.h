@@ -38,12 +38,12 @@ protected:
 	void split(TreeNode* _node);
 	void merge(TreeNode* _node);
 	
-	auto try_populate_node(TreeNode* _node, T& _data) -> size_t;
+	auto try_populate_node(TreeNode* _node, const T& _data) -> size_t;
 	
 	auto get_node(size_t _entry_id) -> TreeNode*;
 
-	auto find_node(T& _data) -> TreeNode* { return find_node_recursive(root_node.get(), _data); };
-	auto find_node_recursive(TreeNode* _node, T& _data) -> TreeNode*;
+	auto find_node(const T& _data) -> TreeNode* { return find_node_recursive(root_node.get(), _data); };
+	auto find_node_recursive(TreeNode* _node, const T& _data) -> TreeNode*;
 
 	auto move_entry(TreeNode* _node, size_t _id);
 	auto move_entry_to_leaf(TreeNode* _start, size_t _id, T& _data) -> TreeNode*;
@@ -63,7 +63,7 @@ public:
 	, depth_limit(_depth_limit)
 	{ }
 	
-	auto try_insert(T& _data) -> size_t;
+	auto try_insert(const T& _data) -> size_t;
 	void remove_entry(size_t _id);
 	auto validate_entry(size_t _id) -> bool;
 	auto get_entry(size_t _id) -> T& { return registry.GetEntry(_id); }

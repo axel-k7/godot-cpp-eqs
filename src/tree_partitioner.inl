@@ -88,7 +88,7 @@ auto TreePartitioner<T, split_size>::move_entry(TreeNode* _node, size_t _id) {
 
 
 template<typename T, size_t split_size>
-auto TreePartitioner<T, split_size>::try_populate_node(TreeNode* _node, T& _data) -> size_t {
+auto TreePartitioner<T, split_size>::try_populate_node(TreeNode* _node, const T& _data) -> size_t {
     if (!node_contains(_node, _data)) return Registry<T>::INVALID_ENTRY_ID;
 
     TreeNode* leaf = find_node_recursive(_node, _data);
@@ -146,7 +146,7 @@ void TreePartitioner<T, split_size>::handle_splits() {
 
 
 template<typename T, size_t split_size>
-auto TreePartitioner<T, split_size>::find_node_recursive(TreeNode* _node, T& _data) -> TreeNode* {
+auto TreePartitioner<T, split_size>::find_node_recursive(TreeNode* _node, const T& _data) -> TreeNode* {
     if (!node_contains(_node, _data)) return nullptr;
 
     if (_node->is_leaf()) return _node;
@@ -171,7 +171,7 @@ void TreePartitioner<T, split_size>::remove_entry(size_t _id) {
 
 
 template<typename T, size_t split_size>
-auto TreePartitioner<T, split_size>::try_insert(T& _data) -> size_t {
+auto TreePartitioner<T, split_size>::try_insert(const T& _data) -> size_t {
     size_t id = try_populate_node(root_node.get(), _data);
     
     handle_splits();

@@ -54,7 +54,8 @@ auto Registry<T>::GetEntry(size_t _entry_id) -> T& {
     RegistryRecord& record = records[_entry_id];
 
     Chunk<Element>* chunk = chunks.GetChunk(record.chunk_id);
-    if (!chunk) return;
+    
+    assert(chunk != nullptr);
 
     return chunk->GetAt(record.index).data;
 }
