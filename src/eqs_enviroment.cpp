@@ -5,6 +5,8 @@ void EQSEnviroment::_ready() {
 
 	AABB global_aabb = mesh->get_global_transform().xform( mesh->get_aabb() );
 
+	global_aabb.grow_by(1.2);
+
 	octree = std::make_unique<InfluenceOctree>(
 		split_limit,
 		depth_limit,
@@ -14,14 +16,6 @@ void EQSEnviroment::_ready() {
 	octree->init();
 
 	nav_mesh.generate(mesh);
-	
-	auto points = nav_mesh.get_points();
-	for (int i = 0; i < points.size(); i++) {
-		octree->try_insert(
-			InfluencePoint{points[i], float(UtilityFunctions::randf())}
-		);
-	}
-
 }
 
 

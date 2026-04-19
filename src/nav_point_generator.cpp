@@ -1,7 +1,7 @@
-#include "eqs_navigation_mesh.h"
+#include "nav_point_generator.h"
 
 
-void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
+void NavPointGenerator::generate(MeshInstance3D* _mesh) {
     if (!_mesh)
         return;
 
@@ -60,24 +60,24 @@ void EQSNavigationMesh::generate(MeshInstance3D* _mesh) {
     print_line("ran generator, node count: ", nodes.size());
 }
 
-auto EQSNavigationMesh::get_points() -> TypedArray<Vector3> {
+auto NavPointGenerator::get_points() -> TypedArray<Vector3> {
     TypedArray<Vector3> points;
     size_t node_amount = nodes.size();
     points.resize(nodes.size());
 
-    for (size_t i = 0; i < node_amount; ++i) {
+    for (size_t i = 0; i < node_amount; ++i)
         points[i] = nodes[i].point;
-    }
     
     return points;
 }
 
-//mega scuffed but temp
-auto EQSNavigationMesh::get_tris() -> std::vector<Triangle> {
-    std::vector<Triangle> tris;
-    tris.reserve(nodes.size());
 
-    for (size_t i = 0; i < nodes.size(); ++i)
+auto NavPointGenerator::get_tris() -> std::vector<Triangle> {
+    std::vector<Triangle> tris;
+    size_t node_amount = nodes.size();
+    tris.resize(node_amount);
+
+    for (size_t i = 0; i < node_amount; ++i)
         tris[i] = nodes[i].tri;
     
     return tris;
@@ -86,7 +86,7 @@ auto EQSNavigationMesh::get_tris() -> std::vector<Triangle> {
 
 
 
-void EQSNavigationMesh::draw_debug() {
+void NavPointGenerator::draw_debug() {
     if (nodes.empty()) return;
 
     DebugDrawer* debug = DebugDrawer::get_singleton();

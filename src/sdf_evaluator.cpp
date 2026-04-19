@@ -1,7 +1,7 @@
 #include "sdf_evaluator.h"
 
 
-auto SDFEvaluator::get_tri_point_dist(Vector3 _point, Triangle _tri) -> float {
+auto SDFEvaluator::point_to_tri(Vector3 _point, Triangle _tri) -> float {
     Vector3 closest_point;
     float min_dist_sq = FLT_MAX;
 
@@ -67,7 +67,7 @@ auto SDFEvaluator::get_tri_point_dist(Vector3 _point, Triangle _tri) -> float {
     return (P - candidate).length();
 }
 
-auto SDFEvaluator::distance_to_aabb(Vector3 _point, AABB _bounds) -> float {
+auto SDFEvaluator::point_to_aabb(Vector3 _point, AABB _bounds) -> float {
     Vector3 min = _bounds.position;
     Vector3 max = _bounds.position + _bounds.size;
 
@@ -77,6 +77,37 @@ auto SDFEvaluator::distance_to_aabb(Vector3 _point, AABB _bounds) -> float {
 
     return sqrt(dx*dx + dy*dy + dz*dz);
 }
+
+auto SDFEvaluator::sdf(Vector3 _point, const std::vector<Triangle>& _tris) -> float {
+    float min_dist = FLT_MAX;
+
+    for (const Triangle& tri : _tris) {
+        float dist = point_to_tri(_point, tri);
+        if (dist < min_dist)
+            min_dist = dist;
+    }
+    
+    return min_dist;
+}
+
+
+auto SDFEvaluator::gradient(Vector3 _point, const std::vector<Triangle>& _tris, float _epsilon) -> Vector3 {
+    float x1 = sdf(_point + Vector3(_epsilon, 0, 0), _tris);
+    float x2 = sdf(_point - Vector3(_epsilon, 0, 0), _tris);
+    float dx = x1 - x2;
+
+    float y1 = sdf(_point + Vector3(0, _epsilon, 0), _tris);
+    float y2 = sdf(_point - Vector3(0, _epsilon, 0), _tris);
+    float dy = y1 - y2;
+
+    float z1 = sdf(_point + Vector3(0, 0, _epsilon), _tris);
+    float z2 = sdf(_point - Vector3(0, 0, _epsilon), _tris);
+    float dz = z1 - z2;
+
+    return Vector3(dx, dy, dz).normalized();
+}
+
+
 
 /*
 auto SDFEvaluator::sdf_query(Vector3 _point, OctreeNode* _node, float& _best) -> float {

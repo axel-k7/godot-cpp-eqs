@@ -5,7 +5,7 @@
 
 #include "sdf_evaluator.h"
 #include "spatial_octree.h"
-#include "eqs_navigation_mesh.h"
+#include "sdf_navmesh.h"
 
 using namespace godot;
 
@@ -35,7 +35,7 @@ private:
 	};
 
 	std::unique_ptr<InfluenceOctree> octree;
-	EQSNavigationMesh nav_mesh;
+	SDFNavigationMesh nav_mesh;
 
 	MeshInstance3D* mesh = nullptr;
 
@@ -53,8 +53,29 @@ public:
 		ClassDB::bind_method(D_METHOD("set_mesh", "_mesh"), &EQSEnviroment::set_mesh);
 		ClassDB::bind_method(D_METHOD("get_mesh"), &EQSEnviroment::get_mesh);
 		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_NODE_TYPE, "MeshInstance3D"), "set_mesh", "get_mesh");
+
+		ClassDB::bind_method(D_METHOD("set_max_slope", "_max_slope"), &EQSEnviroment::set_max_slope);
+		ClassDB::bind_method(D_METHOD("get_max_slope"), &EQSEnviroment::get_max_slope);
+		ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_slope"), "set_max_slope", "get_max_slope");
+
+		ClassDB::bind_method(D_METHOD("set_split_limit", "_split_limit"), &EQSEnviroment::set_split_limit);
+		ClassDB::bind_method(D_METHOD("get_split_limit"), &EQSEnviroment::get_split_limit);
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "split_limit"), "set_split_limit", "get_split_limit");
+
+		ClassDB::bind_method(D_METHOD("set_depth_limit", "_depth_limit"), &EQSEnviroment::set_depth_limit);
+		ClassDB::bind_method(D_METHOD("get_depth_limit"), &EQSEnviroment::get_depth_limit);
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_limit"), "set_depth_limit", "get_depth_limit");
 	}
 
 	void set_mesh(MeshInstance3D* _mesh) { mesh = _mesh; }
 	auto get_mesh() -> MeshInstance3D* { return mesh; }
+	
+	auto get_split_limit() -> int { return split_limit; }
+	void set_split_limit(int _split_limit) { split_limit = _split_limit; }
+	
+	auto get_depth_limit() -> int { return depth_limit; }
+	void set_depth_limit(int _depth_limit) { depth_limit = _depth_limit; }
+
+	auto get_max_slope() -> float { return nav_mesh.max_slope; }
+	void set_max_slope(float _max_slope) { nav_mesh.max_slope = _max_slope; }
 };

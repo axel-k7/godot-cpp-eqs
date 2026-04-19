@@ -74,3 +74,31 @@ void DebugDrawer::draw_aabb(AABB _aabb, Color _color) {
     for (int i = 0; i < 24; i += 2) 
         draw_line(vertices[aabb_indices[i]], vertices[aabb_indices[i+1]], _color);
 }
+
+
+void DebugDrawer::draw_sphere(Vector3 center, float radius, Color color, int segments) {
+    const float step = Math_TAU / segments;
+
+    for (int i = 0; i < segments; i++) {
+        float a0 = i * step;
+        float a1 = (i + 1) * step;
+
+        draw_line(
+            center + Vector3(Math::cos(a0), Math::sin(a0), 0) * radius,
+            center + Vector3(Math::cos(a1), Math::sin(a1), 0) * radius,
+            color
+        );
+
+        draw_line(
+            center + Vector3(Math::cos(a0), 0, Math::sin(a0)) * radius,
+            center + Vector3(Math::cos(a1), 0, Math::sin(a1)) * radius,
+            color
+        );
+
+        draw_line(
+            center + Vector3(0, Math::cos(a0), Math::sin(a0)) * radius,
+            center + Vector3(0, Math::cos(a1), Math::sin(a1)) * radius,
+            color
+        );
+    }
+}

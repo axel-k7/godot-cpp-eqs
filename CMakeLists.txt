@@ -50,8 +50,10 @@ target_sources(${LIBNAME}
     src/register_types.h
     src/query_system.cpp
     src/query_system.h
-    src/octree.cpp
     src/octree.h
+    src/registry.h
+    src/chunk_container.h
+    src/chunk.h
 )
 
 # Fetch a list of the xml files to use for documentation and add to our target

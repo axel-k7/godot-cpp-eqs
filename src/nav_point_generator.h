@@ -18,7 +18,7 @@ struct Vector3Hash {
 
 //very simple nav-mesh generator
 //basically just copies the original mesh triangles and maps their neighbours
-class EQSNavigationMesh {
+class NavPointGenerator {
 private:
 	struct NavigationNode {
 		Triangle tri;

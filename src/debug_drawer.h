@@ -38,6 +38,7 @@ public:
 
 	void draw_line(const Vector3 _from, const Vector3 _to, Color _color);
 	void draw_aabb(const AABB _aabb, Color _color);
+	void draw_sphere(Vector3 center, float radius, Color color, int segments = 16);
 
 	void _process(double delta) override;
 	void _ready() override;
