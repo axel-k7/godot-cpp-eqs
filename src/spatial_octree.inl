@@ -51,9 +51,6 @@ void SpatialOctree<T>::init() {
         0
     );
 
-    Vector3 root_size = Vector3(size, size, size);
-    AABB root_bounds(position - (root_size*0.5f), root_size);
-
     static_cast<OctreeNode*>(root_node.get())->bounds = root_bounds;
 }
 
@@ -67,13 +64,15 @@ void SpatialOctree<T>::draw_debug(Color _color) {
 }
 
 template<typename T>
-void SpatialOctree<T>::draw_debug_recursive(OctreeNode* _node, Color _color) {
+void SpatialOctree<T>::draw_debug_recursive(TreeNode* _node, Color _color) {
     if (!_node) return;
 
-    DebugDrawer::get_singleton()->draw_aabb(_node->bounds, _color);
+    OctreeNode* node = static_cast<OctreeNode*>(_node);
 
-    if (_node->is_leaf()) return;
+    DebugDrawer::get_singleton()->draw_aabb(node->bounds, _color);
+
+    if (node->is_leaf()) return;
 
     for (int i = 0; i < 8; ++i)
-        draw_debug_recursive(static_cast<OctreeNode*>(_node->children[i].get()), _color);
+        draw_debug_recursive(node->children[i].get(), _color);
 }

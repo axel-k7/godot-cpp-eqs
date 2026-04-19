@@ -32,7 +32,7 @@ struct Triangle {
 };
 
 
-static class SDFEvaluator {
+class SDFEvaluator {
 public:
 	auto get_tri_point_dist(Vector3 _point, Triangle tri) -> float;
 	auto distance_to_aabb(Vector3 _point, AABB _bounds) -> float;

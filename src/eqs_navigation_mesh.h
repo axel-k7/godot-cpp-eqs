@@ -10,15 +10,15 @@ using namespace godot;
 
 struct Vector3Hash {
 	size_t operator()(const Vector3& _vector) const {
-		return std::hash<float>{}(_vector.x) 
+		return  std::hash<float>{}(_vector.x) 
 			^ ( std::hash<float>{}(_vector.y) << 1 )
 			^ ( std::hash<float>{}(_vector.z) << 2 );
 	}
 };
 
-class EQSNavigationMesh : public Node3D {
-	GDCLASS(EQSNavigationMesh, Node3D)
-
+//very simple nav-mesh generator
+//basically just copies the original mesh triangles and maps their neighbours
+class EQSNavigationMesh {
 private:
 	struct NavigationNode {
 		Triangle tri;
@@ -32,7 +32,6 @@ private:
 		}
 	};
 
-	
 	std::vector<NavigationNode> nodes;
 	std::unordered_map<Vector3, std::pair<size_t, size_t>, Vector3Hash> edge_map; 
 
@@ -42,13 +41,4 @@ public:
 	void draw_debug();
 	auto get_points() -> TypedArray<Vector3>;
 	auto get_tris() -> std::vector<Triangle>;
-	
-//godot boilerplate
-public:
-	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("generate", "_mesh"), &EQSNavigationMesh::generate);
-		ClassDB::bind_method(D_METHOD("get_points"), &EQSNavigationMesh::get_points);
-		ClassDB::bind_method(D_METHOD("draw_debug"), &EQSNavigationMesh::draw_debug);
-	}
-
 };

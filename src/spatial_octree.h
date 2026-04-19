@@ -12,7 +12,8 @@ using namespace godot;
 template<typename T>
 class SpatialOctree : public TreePartitioner<T, 8> {
 protected:
-	struct OctreeNode : TreePartitioner<T, 8>::TreeNode {
+	using TreeNode = typename TreePartitioner<T, 8>::TreeNode;
+	struct OctreeNode : TreeNode {
 		OctreeNode(TreeNode* _parent, size_t _chunk_id, int _depth, AABB _bounds)
 			: TreeNode(_parent, _chunk_id, _depth)	
 			, bounds(_bounds)
@@ -21,8 +22,7 @@ protected:
 		AABB bounds;
 	};
 
-	Vector3 position;
-	float size;
+	AABB root_bounds;
 
 	virtual auto get_position(const T& _data) -> Vector3 = 0;
 
@@ -33,16 +33,15 @@ protected:
 	
 	
 public:
-	SpatialOctree(int _element_limit, int _depth_limit, Vector3 _position, float _size)
+	SpatialOctree(int _element_limit, int _depth_limit, AABB _bounds)
 		: TreePartitioner<T, 8>(_element_limit, _depth_limit)
-		, position(_position)
-		, size(_size)
+		, root_bounds(_bounds)
 	{}
 
 	void init() override;
 	
 	void draw_debug(Color _color);
-	void draw_debug_recursive(OctreeNode* _node, Color _color);	
+	void draw_debug_recursive(TreeNode* _node, Color _color);	
 };
 
 #include "spatial_octree.inl"

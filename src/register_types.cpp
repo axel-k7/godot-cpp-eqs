@@ -5,9 +5,8 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include "query_system.h"
-//#include "sdf_octree.h"
-#include "eqs_navigation_mesh.h"
+#include "eqs_enviroment.h"
+#include "debug_drawer.h"
 
 using namespace godot;
 
@@ -16,10 +15,9 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(QuerySystem);
-	//GDREGISTER_CLASS(SDFOctree);
-	GDREGISTER_CLASS(EQSNavigationMesh);
+	
 	GDREGISTER_CLASS(DebugDrawer);
+	GDREGISTER_CLASS(EQSEnviroment);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {
