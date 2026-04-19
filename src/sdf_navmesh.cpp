@@ -16,7 +16,8 @@ void SDFNavigationMesh::generate(MeshInstance3D* _mesh) {
     for (int i = 0; i < points.size(); ++i) {
 
         //checking with every triangle totally isn't expensive ahaha
-        Vector3 gradient = SDFEvaluator::gradient(points[i], triangles);
+        Vector3 sample_point = Vector3(points[i]) + Vector3(0, 0.1f, 0);
+        Vector3 gradient = SDFEvaluator::gradient(sample_point, triangles);
 
         float slope = 1.f - gradient.dot(Vector3(0,1,0));
         if (slope > max_slope) continue;
@@ -33,5 +34,5 @@ void SDFNavigationMesh::draw_debug() {
     for (const auto& point : graph) 
         debug->draw_sphere(point.position, 0.01f, Color(point.exposure, point.exposure, point.exposure));
     
-    generator.draw_debug();
+    //generator.draw_debug();
 }
