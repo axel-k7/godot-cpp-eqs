@@ -1,4 +1,4 @@
-#include "tree_partitioner.h"
+#pragma once
 
 template<typename T, size_t split_size>
 void TreePartitioner<T, split_size>::split(TreeNode* _node) {
@@ -20,7 +20,7 @@ void TreePartitioner<T, split_size>::split(TreeNode* _node) {
     std::vector<size_t> element_ids;
     for (int i = 0; i < chunk->count; i++)
         element_ids.push_back(chunk->GetAt(i).id);
-    
+
 
 	for (auto& id : element_ids)
         move_entry_to_leaf(_node, id, registry.GetEntry(id));
@@ -37,7 +37,7 @@ void TreePartitioner<T, split_size>::split(TreeNode* _node) {
 template<typename T, size_t split_size>
 void TreePartitioner<T, split_size>::merge(TreeNode* _node) {
     if (!_node || _node->is_leaf()) return;
-    
+
     _node->chunk_id = registry.CreateChunk(element_limit + 1);
 
     //recursively remove children
@@ -49,7 +49,7 @@ void TreePartitioner<T, split_size>::merge(TreeNode* _node) {
         auto child_chunk = registry.GetChunk(current_child->chunk_id);
         auto items = child_chunk->Items();
 
-        for (int i = 0; i < items.count; i++)
+        for (int j = 0; i < items.count; ++j)
             move_entry(_node, items[0].id);
 
         registry.DestroyChunk(current_child->chunk_id);
@@ -69,7 +69,7 @@ auto TreePartitioner<T, split_size>::move_entry_to_leaf(TreeNode* _node, size_t 
         int index = get_child_index(_node, _data);
 	    return move_entry_to_leaf(_node->children[index].get(), _id, _data);
     }
-    
+
     move_entry(_node, _id);
     return _node;
 }
@@ -94,13 +94,13 @@ auto TreePartitioner<T, split_size>::try_populate_node(TreeNode* _node, const T&
     TreeNode* leaf = find_node_recursive(_node, _data);
     size_t id = registry.CreateEntry(leaf->chunk_id, _data);
 
-    //just duplicating place entry logic here to avoid unnessecary MoveEntry
+    //just duplicating place entry logic here to avoid unnecessary MoveEntry
     if (registry.GetChunk(leaf->chunk_id)->count >= element_limit && leaf->depth < depth_limit) {
         leaf->pending_split = true;
         pending_splits.push_back(leaf);
     }
     id_node_map[id] = leaf;
-    
+
     return id;
 }
 
@@ -109,7 +109,7 @@ template<typename T, size_t split_size>
 auto TreePartitioner<T, split_size>::validate_entry(size_t _id) -> bool {
     TreeNode* node = get_node(_id);
     if (!node) return false;
-    
+
     T& data = registry.GetEntry(_id);
     if (node_contains(node, data)) return true;
 
@@ -117,7 +117,7 @@ auto TreePartitioner<T, split_size>::validate_entry(size_t _id) -> bool {
     while (parent) {
         if (node_contains(parent, data))
             break;
-        
+
         parent = parent->parent;
     }
 
@@ -173,7 +173,7 @@ void TreePartitioner<T, split_size>::remove_entry(size_t _id) {
 template<typename T, size_t split_size>
 auto TreePartitioner<T, split_size>::try_insert(const T& _data) -> size_t {
     size_t id = try_populate_node(root_node.get(), _data);
-    
+
     handle_splits();
     return id;
 }

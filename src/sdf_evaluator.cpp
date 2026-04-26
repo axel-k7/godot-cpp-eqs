@@ -15,16 +15,16 @@ auto SDFEvaluator::point_to_tri(Vector3 _point, Triangle _tri) -> float {
     float area2 = N.length_squared();
     if (area2 == 0.f) return FLT_MAX; //incase triangle is wack
 
-    N.normalize();  
+    N.normalize();
 
     //projecting point onto the triangle
-    Vector3 P_proj = P - (P - A).dot(N) * N;    
+    Vector3 P_proj = P - (P - A).dot(N) * N;
 
-    //barycentric test
     Vector3 v0 = B - A;
     Vector3 v1 = C - A;
-    Vector3 v2 = P_proj - A;    
+    Vector3 v2 = P_proj - A;
 
+    //barycentric test
     float d00 = v0.dot(v0);
     float d01 = v0.dot(v1);
     float d11 = v1.dot(v1);
@@ -36,28 +36,28 @@ auto SDFEvaluator::point_to_tri(Vector3 _point, Triangle _tri) -> float {
 
     float v = (d11 * d20 - d01 * d21) / denom;
     float w = (d00 * d21 - d01 * d20) / denom;
-    float u = 1 - v - w;    
-    Vector3 candidate;  
+    float u = 1 - v - w;
+    Vector3 candidate;
     if (v >= 0 && w >= 0 && u >= 0)  {
         candidate = P_proj;
     } else {
         auto closestOnSegment = [](Vector3 _P, Vector3 _A, Vector3 _B) {
             Vector3 AB = _B - _A;
-            float denom = AB.dot(AB);                
+            float denom = AB.dot(AB);
             if (denom == 0.f)
-                return _A;  
+                return _A;
             float t = (_P - _A).dot(AB) / denom;
             t = Math::clamp(t, 0.f, 1.f);
             return _A + t * AB;
-        };  
+        };
 
         Vector3 pAB = closestOnSegment(P, A, B);
         Vector3 pBC = closestOnSegment(P, B, C);
-        Vector3 pCA = closestOnSegment(P, C, A);    
+        Vector3 pCA = closestOnSegment(P, C, A);
 
         float dAB = (P - pAB).length_squared();
         float dBC = (P - pBC).length_squared();
-        float dCA = (P - pCA).length_squared(); 
+        float dCA = (P - pCA).length_squared();
 
         if (dAB < dBC && dAB < dCA) candidate = pAB;
         else if (dBC < dCA)         candidate = pBC;
@@ -86,7 +86,7 @@ auto SDFEvaluator::sdf(Vector3 _point, const std::vector<Triangle>& _tris) -> fl
         if (dist < min_dist)
             min_dist = dist;
     }
-    
+
     return min_dist;
 }
 
@@ -121,7 +121,7 @@ auto SDFEvaluator::sdf_query(Vector3 _point, OctreeNode* _node, float& _best) ->
 
         for (auto& [tri, _] : items) {
             float dist = get_tri_point_dist(_point, tri);
-            
+
             if (dist < _best)
                 _best = dist;
         }

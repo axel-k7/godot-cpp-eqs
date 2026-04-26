@@ -1,7 +1,7 @@
-#include "chunk.h"
+#pragma once
 
 template<typename T>
-Chunk<T>::Chunk(size_t _capacity) 
+Chunk<T>::Chunk(size_t _capacity)
     : chunk_buffer(operator new(sizeof(T) * _capacity, std::align_val_t(alignof(T))))
     , capacity(_capacity)
 {
@@ -35,7 +35,7 @@ auto Chunk<T>::operator=(Chunk&& _source) noexcept -> Chunk& {
     Clear();
     if (chunk_buffer)
         operator delete(chunk_buffer, std::align_val_t(alignof(T)));
-    
+
     chunk_buffer = _source.chunk_buffer;
     count = _source.count;
     capacity = _source.capacity;
@@ -56,7 +56,7 @@ auto Chunk<T>::Push(Args&&... _args) -> T& {
 
     void* last = GetRaw(count);
     T* item = new (last) T(std::forward<Args>(_args)...);
-    count++;
+    ++count;
 
     return *item;
 }
@@ -66,7 +66,7 @@ template<typename T>
 void Chunk<T>::PopBack() {
     if (count == 0) return;
 
-    count--;
+    --count;
     GetAt(count).~T();
 }
 
@@ -90,19 +90,20 @@ void Chunk<T>::SwapPop(size_t _index) {
         T* data = GetAll();
         T& dst = data[_index];
         T& src = data[last];
-        
-        dst.~T();
-        new (&dst) T(std::move(src));
+
+        std::swap(dst, src);
     }
-    
+
     PopBack();
 }
 
 template<typename T>
 auto Chunk<T>::MoveFrom(Chunk& _source, size_t _source_index) -> T& {
-    //breaks if source = this
-    
     T& source_data = _source.GetAt(_source_index);
+
+    if (&_source == this)
+    	return source_data;
+
     T* new_data = Push(std::move(source_data));
 
     _source.SwapPop(_source_index);

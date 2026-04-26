@@ -4,7 +4,6 @@
 
 template<typename T>
 struct Chunk {
-	template<typename T>
 	struct ChunkView {
 		T* first;
 		size_t count;
@@ -42,11 +41,11 @@ struct Chunk {
 	//maybe return this in a cleaner way?
 	auto GetAll() ->  T* { return static_cast<T*>(chunk_buffer); }
 	auto GetAll() const -> const T* { return static_cast<const T*>(chunk_buffer); }
-	
+
 	auto GetAt(size_t _index) -> T& { return GetAll()[_index]; }
 	auto GetAt(size_t _index) const -> const T& { return GetAll()[_index]; }
-	
-	auto GetRaw(size_t _index) -> void* { return static_cast<uint8_t*>(chunk_buffer) + (sizeof(T) * _index); }
+
+	auto GetRaw(size_t _index) const -> void* { return static_cast<uint8_t*>(chunk_buffer) + (sizeof(T) * _index); }
 
 	auto begin() -> T* { return GetAll(); }
 	auto begin() const -> const T* { return GetAll(); }
@@ -54,8 +53,8 @@ struct Chunk {
 	auto end() 	 -> T* { return GetAll() + count; }
 	auto end() 	 const -> const T* { return GetAll() + count; }
 
-	auto Items() -> ChunkView<T> { return { GetAll(), count }; }
-	auto Items() const -> ChunkView<const T> { return { GetAll(), count }; }
+	auto Items() -> ChunkView { return { GetAll(), count }; }
+	auto Items() const -> ChunkView { return { GetAll(), count }; }
 
 	bool IsFull() const { return count == capacity; }
 	bool IsEmpty() const { return count == 0; }

@@ -42,18 +42,18 @@ project(godot-cpp-template
     LANGUAGES CXX
 )
 
-add_library(${LIBNAME} SHARED)
+add_library(${LIBNAME} SHARED
+        src/octri.cpp
+        src/octri.h
+        src/sdf_evaluator.h
+        src/sdf_evaluator.cpp
+        src/mesh_decomposer.h
+        src/mesh_decomposer.cpp)
 
 target_sources(${LIBNAME}
     PRIVATE
-    src/register_types.cpp
     src/register_types.h
-    src/query_system.cpp
-    src/query_system.h
-    src/octree.h
-    src/registry.h
-    src/chunk_container.h
-    src/chunk.h
+    src/register_types.cpp
 )
 
 # Fetch a list of the xml files to use for documentation and add to our target

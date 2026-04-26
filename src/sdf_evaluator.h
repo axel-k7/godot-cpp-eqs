@@ -4,9 +4,6 @@
 
 #include "godot_cpp/variant/aabb.hpp"
 
-#include "debug_drawer.h"
-#include "registry.h"
-
 using namespace godot;
 
 struct Triangle {
