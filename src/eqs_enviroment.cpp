@@ -1,4 +1,4 @@
-#include "eqs_enviroment.h"
+/*#include "eqs_enviroment.h"
 
 void EQSEnviroment::_ready() {
 	if (Engine::get_singleton()->is_editor_hint()) return;
@@ -17,7 +17,7 @@ void EQSEnviroment::_ready() {
 	);
 
 	octree->init();
-	*/
+
 
 	nav_mesh.generate(root);
 }
@@ -28,4 +28,4 @@ void EQSEnviroment::draw_debug(Color _color) {
 		octree->draw_debug(_color);
 
 	nav_mesh.draw_debug();
-}
+}*/

@@ -5,7 +5,7 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include "eqs_enviroment.h"
+#include "ecs/temp_coupling.h"
 #include "debug_drawer.h"
 
 using namespace godot;
@@ -15,9 +15,9 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	
+
 	GDREGISTER_CLASS(DebugDrawer);
-	GDREGISTER_CLASS(EQSEnviroment);
+	GDREGISTER_CLASS(ECSTester);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {
